@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import Head from 'next/head'
 import { FaSearch } from 'react-icons/fa'
+import { IoMdClose } from 'react-icons/io'
 
-export default function Search() {
+export default function SearchModal({ isOpen, onClose }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState([])
 
@@ -16,33 +16,38 @@ export default function Search() {
     ])
   }
 
-  return (
-    <>
-      <Head>
-        <title>Search - Sociorealm</title>
-        <meta name="description" content="Search for users, posts, and topics on Sociorealm" />
-      </Head>
+  if (!isOpen) return null
 
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <form onSubmit={handleSearch} className="mb-8">
-          <div className="flex items-center bg-white dark:bg-gray-800 rounded-full shadow-md">
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <h2 className="text-xl font-bold">Search Sociorealm</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <IoMdClose size={24} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSearch} className="p-4">
+          <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-full">
             <input
               type="text"
               placeholder="Search for users, posts, or topics"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-grow px-6 py-3 rounded-l-full bg-transparent focus:outline-none"
+              className="flex-grow px-6 py-3 bg-transparent focus:outline-none"
+              autoFocus
             />
             <button
               type="submit"
-              className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-r-full hover:from-purple-600 hover:to-pink-600 transition-colors"
+              className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full hover:from-purple-600 hover:to-pink-600 transition-colors"
             >
               <FaSearch size={20} />
             </button>
           </div>
         </form>
 
-        <div className="space-y-4">
+        <div className="flex-grow overflow-y-auto p-4 space-y-4">
           {searchResults.map((result:any) => (
             <div key={result.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
               {result.type === 'user' ? (
@@ -58,12 +63,11 @@ export default function Search() {
               )}
             </div>
           ))}
+          {searchResults.length === 0 && searchTerm && (
+            <p className="text-center text-gray-500 mt-8">No results found for "{searchTerm}"</p>
+          )}
         </div>
-
-        {searchResults.length === 0 && searchTerm && (
-          <p className="text-center text-gray-500 mt-8">No results found for "{searchTerm}"</p>
-        )}
       </div>
-    </>
+    </div>
   )
 }

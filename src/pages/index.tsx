@@ -35,49 +35,49 @@ export default function Home() {
   const [storyImage, setStoryImage] = useState<string>("");
   const [storyModalOpen, setStoryModalOpen] = useState(false);
   const [countdown, setCountdown] = useState(30);
-const axiosInstance=""
-  useEffect(() => {
-    axios.get("http://localhost:3001/api/users/getPost").then((res) => {
-      setPosts(res.data.data);
-    });
-  }, []);
+// const axiosInstance=""
+  // useEffect(() => {
+  //   axios.get("http://localhost:3001/api/users/getPost").then((res) => {
+  //     setPosts(res.data.data);
+  //   });
+  // }, []);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axiosInstance.get("/getAlluser");
-        if (Array.isArray(response?.data)) {
-          const Allusers = response.data;
-          const Alluser = Allusers.filter((user: any) => user.story.length > 0);
-          setStories(Alluser);
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-    fetchUserData();
-  }, []);
+  // useEffect(() => {
+  //   const fetchUserData = async () => {
+  //     try {
+  //       const response = await axiosInstance.get("/getAlluser");
+  //       if (Array.isArray(response?.data)) {
+  //         const Allusers = response.data;
+  //         const Alluser = Allusers.filter((user: any) => user.story.length > 0);
+  //         setStories(Alluser);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching user data:", error);
+  //     }
+  //   };
+  //   fetchUserData();
+  // }, []);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
+  // useEffect(() => {
+  //   let timer: NodeJS.Timeout;
 
-    if (storyModalOpen) {
-      timer = setInterval(() => {
-        setCountdown((prevCountdown) => prevCountdown - 1);
-      }, 1000);
-    } else {
-      setCountdown(30);
-    }
+  //   if (storyModalOpen) {
+  //     timer = setInterval(() => {
+  //       setCountdown((prevCountdown) => prevCountdown - 1);
+  //     }, 1000);
+  //   } else {
+  //     setCountdown(30);
+  //   }
 
-    return () => clearInterval(timer);
-  }, [storyModalOpen]);
+  //   return () => clearInterval(timer);
+  // }, [storyModalOpen]);
 
-  useEffect(() => {
-    if (countdown === 0) {
-      setStoryModalOpen(false);
-    }
-  }, [countdown]);
-  console.log({posts});
+  // useEffect(() => {
+  //   if (countdown === 0) {
+  //     setStoryModalOpen(false);
+  //   }
+  // }, [countdown]);
+  // console.log({posts});
   
 
   return (
@@ -89,7 +89,7 @@ const axiosInstance=""
       </Head>
 
       <div className="min-h-screen bg-gray-900 text-white pb-16">
-        <header className="bg-gray-800 p-4 flex justify-between items-center">
+        {/* <header className="bg-gray-800 p-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-transparent bg-clip-text">
             Sociorealm
           </h1>
@@ -101,7 +101,7 @@ const axiosInstance=""
               <FaBell className="h-6 w-6" />
             </button>
           </div>
-        </header>
+        </header> */}
 
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="stories-container mb-8 flex space-x-4 overflow-x-auto pb-2">
@@ -203,13 +203,13 @@ const axiosInstance=""
         </div>
       )}
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 flex justify-around p-3">
+      {/* <nav className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 flex justify-around p-3">
         <FaHome className="h-6 w-6 text-white" />
         <FaSearch className="h-6 w-6 text-white" />
         <AiOutlinePlusCircle className="h-8 w-8 text-purple-500" />
         <FaUser className="h-6 w-6 text-white" />
         <FaBars className="h-6 w-6 text-white" />
-      </nav>
+      </nav> */}
     </>
   )
 }

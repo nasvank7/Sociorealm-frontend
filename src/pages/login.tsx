@@ -1,3 +1,3 @@
-import LoginPage from "@/Components/UserAuth/login";
+import LoginPage from "@/Components/UserAuth/Login";
 
 export default LoginPage

@@ -1,11 +1,27 @@
 import React, { useEffect, useState } from "react";
-import Head from 'next/head'
-import Post from '@/Components/Post/post'
-import TrendingTopic from '@/Components/TrendingTopics/TrendingTopics'
-import { axiosInstance } from "../../services/userApi/axiosInstance";
-import axios from 'axios'
-import { FaImage, FaVideo, FaPoll, FaSmile, FaHeart, FaComment, FaShare, FaCamera, FaBell, FaHome, FaSearch, FaUser, FaBars } from 'react-icons/fa'
-import { AiOutlinePlusCircle } from 'react-icons/ai'
+import Head from "next/head";
+
+import TrendingTopic from "@/Components/TrendingTopics/TrendingTopics";
+
+import axios from "axios";
+import {
+  FaImage,
+  FaVideo,
+  FaPoll,
+  FaSmile,
+  FaHeart,
+  FaComment,
+  FaShare,
+  FaCamera,
+  FaBell,
+  FaHome,
+  FaSearch,
+  FaUser,
+  FaBars,
+} from "react-icons/fa";
+import { AiOutlinePlusCircle } from "react-icons/ai";
+import { axiosInstance } from "@/Config/axios";
+import Post from "@/Components/Post/post";
 
 interface User {
   _id: string;
@@ -13,7 +29,7 @@ interface User {
   image: string;
 }
 
-interface Post {
+interface Posts {
   _id: string;
   userId: User;
   description: string;
@@ -29,56 +45,55 @@ interface Story {
 }
 
 export default function Home() {
-  const [postContent, setPostContent] = useState('')
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [postContent, setPostContent] = useState("");
+  const [posts, setPosts] = useState<Posts[]>([]);
   const [stories, setStories] = useState<Story[]>([]);
   const [storyImage, setStoryImage] = useState<string>("");
   const [storyModalOpen, setStoryModalOpen] = useState(false);
   const [countdown, setCountdown] = useState(30);
-// const axiosInstance=""
-  // useEffect(() => {
-  //   axios.get("http://localhost:3001/api/users/getPost").then((res) => {
-  //     setPosts(res.data.data);
-  //   });
-  // }, []);
 
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     try {
-  //       const response = await axiosInstance.get("/getAlluser");
-  //       if (Array.isArray(response?.data)) {
-  //         const Allusers = response.data;
-  //         const Alluser = Allusers.filter((user: any) => user.story.length > 0);
-  //         setStories(Alluser);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching user data:", error);
-  //     }
-  //   };
-  //   fetchUserData();
-  // }, []);
+  useEffect(() => {
+    axiosInstance.get("/getPost").then((res) => {
+      setPosts(res.data.data);
+    });
+  }, []);
 
-  // useEffect(() => {
-  //   let timer: NodeJS.Timeout;
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axiosInstance.get("/getAlluser");
+        if (Array.isArray(response?.data)) {
+          const Allusers = response.data;
+          const Alluser = Allusers.filter((user: any) => user.story.length > 0);
+          setStories(Alluser);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    fetchUserData();
+  }, []);
 
-  //   if (storyModalOpen) {
-  //     timer = setInterval(() => {
-  //       setCountdown((prevCountdown) => prevCountdown - 1);
-  //     }, 1000);
-  //   } else {
-  //     setCountdown(30);
-  //   }
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
 
-  //   return () => clearInterval(timer);
-  // }, [storyModalOpen]);
+    if (storyModalOpen) {
+      timer = setInterval(() => {
+        setCountdown((prevCountdown) => prevCountdown - 1);
+      }, 1000);
+    } else {
+      setCountdown(30);
+    }
 
-  // useEffect(() => {
-  //   if (countdown === 0) {
-  //     setStoryModalOpen(false);
-  //   }
-  // }, [countdown]);
-  // console.log({posts});
-  
+    return () => clearInterval(timer);
+  }, [storyModalOpen]);
+
+  useEffect(() => {
+    if (countdown === 0) {
+      setStoryModalOpen(false);
+    }
+  }, [countdown]);
+
 
   return (
     <>
@@ -107,24 +122,28 @@ export default function Home() {
           <div className="stories-container mb-8 flex space-x-4 overflow-x-auto pb-2">
             {stories.map((story, index) => (
               <div key={index} className="flex flex-col items-center">
-                <div 
+                <div
                   onClick={() => {
                     setStoryModalOpen(true);
                     setStoryImage(story.story);
                   }}
                   className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-500 cursor-pointer"
                 >
-                  <img src={story.story} alt={story.username} className="w-full h-full object-cover" />
+                  <img
+                    src={story.story}
+                    alt={story.username}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <span className="text-xs mt-1">{story.username}</span>
               </div>
             ))}
           </div>
-          
+
           <div className="flex flex-col lg:flex-row gap-8">
             <main className="w-full lg:w-2/3">
               <div className="bg-gray-800 rounded-2xl shadow-lg p-6 mb-8">
-                <textarea 
+                <textarea
                   className="w-full h-24 p-4 rounded-xl bg-gray-700 border-2 border-gray-600 focus:border-purple-500 focus:ring-0 resize-none text-white placeholder-gray-400"
                   placeholder="What's on your mind?"
                   value={postContent}
@@ -153,6 +172,7 @@ export default function Home() {
 
               <div className="space-y-6">
                 {posts?.length !== 0 ? (
+                
                   posts?.map((post) => (
                     <Post key={post._id} postDetails={post} />
                   ))
@@ -164,7 +184,9 @@ export default function Home() {
 
             <aside className="w-full lg:w-1/3 space-y-8">
               <div className="bg-gray-800 rounded-2xl shadow-lg p-6">
-                <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text">Trending Topics</h2>
+                <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text">
+                  Trending Topics
+                </h2>
                 <div className="space-y-4">
                   <TrendingTopic topic="webdev" posts={1234} />
                   <TrendingTopic topic="naturelovers" posts={987} />
@@ -173,7 +195,9 @@ export default function Home() {
                 </div>
               </div>
               <div className="bg-gray-800 rounded-2xl shadow-lg p-6">
-                <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text">Suggested Connections</h2>
+                <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text">
+                  Suggested Connections
+                </h2>
                 {/* Add suggested connections here */}
               </div>
             </aside>
@@ -193,7 +217,7 @@ export default function Home() {
               </div>
               <img src={storyImage} alt="Story" className="w-full" />
             </div>
-            <button 
+            <button
               onClick={() => setStoryModalOpen(false)}
               className="absolute top-2 right-2 text-white"
             >
@@ -211,5 +235,5 @@ export default function Home() {
         <FaBars className="h-6 w-6 text-white" />
       </nav> */}
     </>
-  )
+  );
 }

@@ -1,60 +1,80 @@
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
-import Link from 'next/link'
-import { FaGoogle, FaEye, FaEyeSlash } from 'react-icons/fa'
-import { toast } from 'react-toastify'
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google'
-import { axiosInstance } from '@/Config/axios'
-import { loginValidationSchema } from '@/services/Validations/userValidation'
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { axiosInstance } from "@/Config/axios";
+import { loginValidationSchema } from "@/services/Validations/userValidation";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "@/services/redux/slices/authSlice";
 
 const LoginPage: React.FC = () => {
-  const router = useRouter()
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
-
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const dispatch = useDispatch();
   useEffect(() => {
-    const token = localStorage.getItem('jwtToken')
+    const token = localStorage.getItem("jwtToken");
     if (token) {
-      router.push('/')
+      router.push("/");
     }
-  }, [router])
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      await loginValidationSchema.validate({ username, password }, { abortEarly: false })
-      const res = await axiosInstance.post('/login', { username, password })
+      await loginValidationSchema.validate(
+        { username, password },
+        { abortEarly: false }
+      );
+      const res = await axiosInstance.post("/login", { username, password });
       if (res.data.success) {
-        localStorage.setItem('jwtToken', JSON.stringify(res.data.token))
-        toast.success('Logged in Successfully', { autoClose: 2000 })
+        localStorage.setItem("jwtToken", JSON.stringify(res.data.token));
+
+        toast.success("Logged in Successfully", { autoClose: 2000 });
         setTimeout(() => {
-          router.push('/')
-        }, 2000)
+          router.push("/");
+        }, 2000);
+        dispatch(
+          setCredentials({
+            _id: res.data.user._id,
+            username: res.data.user.username,
+            email: res.data.user.email,
+            image: res.data.user.image,
+            story: res.data.user.story,
+          })
+        );
       } else {
-        if (res.data.Blocked) toast.error('Account Blocked', { autoClose: 3000 })
-        if (res.data.userNameErr) toast.error('User not found', { autoClose: 3000 })
-        if (res.data.passErr) toast.error('Invalid password', { autoClose: 3000 })
+        if (res.data.Blocked)
+          toast.error("Account Blocked", { autoClose: 3000 });
+        if (res.data.userNameErr)
+          toast.error("User not found", { autoClose: 3000 });
+        if (res.data.passErr)
+          toast.error("Invalid password", { autoClose: 3000 });
       }
     } catch (err) {
       if (err instanceof Error) {
-        setError(err.message)
-        toast.error(err.message)
+        setError(err.message);
+        toast.error(err.message);
       } else {
-        console.error(err)
-        toast.error('An unexpected error occurred')
+        console.error(err);
+        toast.error("An unexpected error occurred");
       }
     }
-  }
+  };
 
   return (
-    <GoogleOAuthProvider clientId='206160267923-8o28ar0sr5tbs175dmn0rfgtgvl36419.apps.googleusercontent.com'>
+    <GoogleOAuthProvider clientId="206160267923-8o28ar0sr5tbs175dmn0rfgtgvl36419.apps.googleusercontent.com">
       <div className="min-h-screen bg-gray-900 flex">
         <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
           <div className="mx-auto w-full max-w-sm lg:w-96">
             <div>
-              <h2 className="mt-6 text-4xl font-extrabold text-white font-serif italic">sociorealm</h2>
+              <h2 className="mt-6 text-4xl font-extrabold text-white font-serif italic">
+                sociorealm
+              </h2>
               <p className="mt-2 text-sm text-gray-400">
                 Enter to get unlimited access to data & information.
               </p>
@@ -63,7 +83,10 @@ const LoginPage: React.FC = () => {
             <div className="mt-8">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="username" className="block text-sm font-medium text-gray-300">
+                  <label
+                    htmlFor="username"
+                    className="block text-sm font-medium text-gray-300"
+                  >
                     Username
                   </label>
                   <div className="mt-1">
@@ -82,7 +105,10 @@ const LoginPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-300">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-gray-300"
+                  >
                     Password
                   </label>
                   <div className="mt-1 relative">
@@ -109,7 +135,10 @@ const LoginPage: React.FC = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="text-sm">
-                    <Link href="/forgot-password" className="font-medium text-blue-500 hover:text-blue-400">
+                    <Link
+                      href="/forgot-password"
+                      className="font-medium text-blue-500 hover:text-blue-400"
+                    >
                       Forgot your password?
                     </Link>
                   </div>
@@ -131,7 +160,9 @@ const LoginPage: React.FC = () => {
                     <div className="w-full border-t border-gray-700"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-gray-900 text-gray-400">Or Login with</span>
+                    <span className="px-2 bg-gray-900 text-gray-400">
+                      Or Login with
+                    </span>
                   </div>
                 </div>
 
@@ -160,11 +191,13 @@ const LoginPage: React.FC = () => {
                         })
                         .catch((err) => {
                           console.log(err);
-                          toast.error("An error occurred during Google login. Please try again.");
+                          toast.error(
+                            "An error occurred during Google login. Please try again."
+                          );
                         });
                     }}
                     onError={() => {
-                      console.log('Login Failed');
+                      console.log("Login Failed");
                       toast.error("Google login failed. Please try again.");
                     }}
                   />
@@ -172,8 +205,11 @@ const LoginPage: React.FC = () => {
               </div>
 
               <p className="mt-6 text-center text-sm text-gray-400">
-                Don't have an account?{' '}
-                <Link href="/signup" className="font-medium text-blue-500 hover:text-blue-400">
+                Don't have an account?{" "}
+                <Link
+                  href="/Register"
+                  className="font-medium text-blue-500 hover:text-blue-400"
+                >
                   Create an Account
                 </Link>
               </p>
@@ -183,14 +219,15 @@ const LoginPage: React.FC = () => {
 
         <div className="hidden lg:block relative w-0 flex-1">
           <div className="absolute inset-0 h-full w-full bg-gradient-to-br from-blue-900 to-purple-900 flex items-center justify-center">
-            <div className="bg-cover w-[25rem] h-[35rem] mt-10 bg-center bg-no-repeat relative p-[1.3rem]"
-                 style={{ backgroundImage: "url(/images/home-phones-2x.png)" }}>
-            </div>
+            <div
+              className="bg-cover w-[25rem] h-[35rem] mt-10 bg-center bg-no-repeat relative p-[1.3rem]"
+              style={{ backgroundImage: "url(/images/home-phones-2x.png)" }}
+            ></div>
           </div>
         </div>
       </div>
     </GoogleOAuthProvider>
-  )
-}
+  );
+};
 
-export default LoginPage
+export default LoginPage;

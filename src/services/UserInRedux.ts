@@ -7,6 +7,8 @@ import RootState from "./redux/Store/RootState";
 export const useUserDetails = () => {
   const router = useRouter();
   const userStore = useSelector((state: RootState) => state.user);
+  console.log({userStore});
+  
 
   useEffect(() => {
     if (!userStore.userCred) {

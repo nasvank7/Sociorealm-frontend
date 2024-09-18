@@ -1,123 +1,55 @@
-import { useEffect, useState } from "react";
-import ConversationList from "./Components/ConversationList";
-import ChatWindow from "./Components/ChatWindow";
+import React, { useState } from 'react';
+import ConversationList from '@/Components/Chat/Components/ConversationList';
+import ChatWindow from '@/Components/Chat/Components/ChatWindow';
+import { IoMdArrowBack } from 'react-icons/io';
 
-interface Conversation {
-    id: string;
-    user: {
-      id: string;
-      name: string;
-      avatar: string;
-    };
-    lastMessage: string;
-    timestamp: string;
-    unreadCount: number;
-  }
-  
-  // Dummy conversation data
-  const dummyConversations: Conversation[] = [
-    {
-      id: '1',
-      user: {
-        id: 'user1',
-        name: 'Alice Johnson',
-        avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
-      },
-      lastMessage: 'Hey, how are you doing?',
-      timestamp: '2023-05-15T14:30:00Z',
-      unreadCount: 2,
-    },
-    {
-      id: '2',
-      user: {
-        id: 'user2',
-        name: 'Bob Smith',
-        avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-      },
-      lastMessage: 'Did you see the latest post?',
-      timestamp: '2023-05-15T13:45:00Z',
-      unreadCount: 0,
-    },
-    {
-      id: '3',
-      user: {
-        id: 'user3',
-        name: 'Charlie Brown',
-        avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
-      },
-      lastMessage: 'Let\'s meet up this weekend!',
-      timestamp: '2023-05-15T10:20:00Z',
-      unreadCount: 1,
-    },
-    {
-      id: '4',
-      user: {
-        id: 'user4',
-        name: 'Diana Prince',
-        avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
-      },
-      lastMessage: 'Thanks for your help yesterday.',
-      timestamp: '2023-05-14T22:15:00Z',
-      unreadCount: 0,
-    },
-    {
-      id: '5',
-      user: {
-        id: 'user5',
-        name: 'Ethan Hunt',
-        avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
-      },
-      lastMessage: 'Mission accomplished!',
-      timestamp: '2023-05-14T20:00:00Z',
-      unreadCount: 3,
-    },
-  ];
-  
-  const ChatPage: React.FC = () => {
-    const [conversations, setConversations] = useState<Conversation[]>(dummyConversations);
-    const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
-    const [isMobile, setIsMobile] = useState(false);
-  
-    useEffect(() => {
-      const handleResize = () => {
-        setIsMobile(window.innerWidth < 768);
-      };
-  
-      handleResize();
-      window.addEventListener('resize', handleResize);
-  
-      return () => window.removeEventListener('resize', handleResize);
-    }, []);
-  
-    return (
-      <div className="flex h-screen bg-gray-900">
-        <div className={`${isMobile && selectedConversation ? 'hidden' : 'w-full md:w-1/3'} border-r border-gray-700`}>
-          <ConversationList 
-            conversations={conversations}
-            selectedConversation={selectedConversation}
-            onSelectConversation={(id) => {
-              setSelectedConversation(id);
-              if (isMobile) {
-                document.getElementById('chatWindow')?.scrollIntoView({ behavior: 'smooth' });
-              }
-            }}
-          />
-        </div>
-        <div id="chatWindow" className={`${isMobile && !selectedConversation ? 'hidden' : 'w-full md:w-2/3'}`}>
-          {selectedConversation ? (
-            <ChatWindow 
-              conversationId={selectedConversation} 
-              onBack={() => setSelectedConversation(null)}
-              isMobile={isMobile}
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              Select a conversation to start chatting
-            </div>
-          )}
-        </div>
-      </div>
-    );
+const ChatPage: React.FC = () => {
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [showConversations, setShowConversations] = useState(true);
+
+  const handleSelectConversation = (userId: string) => {
+    setSelectedUserId(userId);
+    setShowConversations(false);
   };
-  
-  export default ChatPage;
+
+  const handleBackToConversations = () => {
+    setShowConversations(true);
+  };
+
+  return (
+    <div className="flex flex-col md:flex-row h-screen bg-gray-900">
+      <div 
+        className={`${
+          showConversations ? 'flex' : 'hidden'
+        } md:flex flex-col w-full md:w-1/3 lg:w-1/4 border-r border-gray-700`}
+      >
+        <ConversationList onSelectConversation={handleSelectConversation} />
+      </div>
+      <div 
+        className={`${
+          !showConversations ? 'flex' : 'hidden'
+        } md:flex flex-col w-full md:w-2/3 lg:w-3/4`}
+      >
+        {selectedUserId ? (
+          <>
+            <div className="md:hidden bg-gray-800 p-2">
+              <button 
+                onClick={handleBackToConversations}
+                className="text-white flex items-center"
+              >
+                <IoMdArrowBack className="mr-2" /> Back to Conversations
+              </button>
+            </div>
+            <ChatWindow userId={selectedUserId} />
+          </>
+        ) : (
+          <div className="flex items-center justify-center h-full text-white">
+            Select a conversation to start chatting
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ChatPage;

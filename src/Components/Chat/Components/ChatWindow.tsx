@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FaArrowLeft, FaPaperPlane } from 'react-icons/fa';
+import { axiosInstance } from '@/Config/axios';
+import { useUserDetails } from "@/services/UserInRedux";
+import { io, Socket } from "socket.io-client";
 
 interface Message {
-  id: string;
+  _id: string;
   senderId: string;
   content: string;
   timestamp: string;
@@ -18,40 +21,59 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId, onBack, isMobil
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef<Socket | null>(null);
+  const userDetails = useUserDetails();
+
+  const fetchMessages = useCallback(async () => {
+    try {
+      const response = await axiosInstance.get(`/messages/${conversationId}`);
+      setMessages(response.data);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
+  }, [conversationId]);
 
   useEffect(() => {
-    // Fetch messages for the selected conversation
-    const fetchMessages = async () => {
-      // Replace with your actual API call
-      // For now, let's use dummy data
-      const dummyMessages: Message[] = [
-        { id: '1', senderId: 'other', content: 'Hey there!', timestamp: '2023-05-15T14:30:00Z' },
-        { id: '2', senderId: 'currentUser', content: 'Hi! How are you?', timestamp: '2023-05-15T14:31:00Z' },
-        { id: '3', senderId: 'other', content: 'Im doing great, thanks for asking. How about you?', timestamp: '2023-05-15T14:32:00Z' },
-        { id: '4', senderId: 'currentUser', content: 'Im good too. Just working on some projects.', timestamp: '2023-05-15T14:33:00Z' },
-        { id: '5', senderId: 'other', content: 'That sounds interesting! What kind of projects?', timestamp: '2023-05-15T14:34:00Z' },
-      ];
-      setMessages(dummyMessages);
-    };
-
     fetchMessages();
-  }, [conversationId]);
+
+    socketRef.current = io("http://localhost:3001"); // Replace with your socket server URL
+
+    socketRef.current.on('connect', () => {
+      console.log('Connected to socket server');
+      socketRef.current?.emit('join', { conversationId, userId: userDetails?._id });
+    });
+
+    socketRef.current.on('message', (newMessage: Message) => {
+      setMessages(prevMessages => [...prevMessages, newMessage]);
+    });
+
+    return () => {
+      socketRef.current?.disconnect();
+    };
+  }, [conversationId, fetchMessages, userDetails?._id]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newMessage.trim()) {
-      const newMsg: Message = {
-        id: Date.now().toString(),
-        senderId: 'currentUser',
-        content: newMessage,
-        timestamp: new Date().toISOString(),
-      };
-      setMessages([...messages, newMsg]);
-      setNewMessage('');
+      try {
+        const response = await axiosInstance.post('/messages', {
+          conversationId,
+          senderId: userDetails?._id,
+          content: newMessage,
+        });
+
+        const sentMessage = response.data;
+        setMessages([...messages, sentMessage]);
+        setNewMessage('');
+
+        socketRef.current?.emit('sendMessage', sentMessage);
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
     }
   };
 
@@ -68,14 +90,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId, onBack, isMobil
       <div className="flex-1 overflow-y-auto p-4">
         {messages.map((message) => (
           <div
-            key={message.id}
+            key={message._id}
             className={`mb-4 flex ${
-              message.senderId === 'currentUser' ? 'justify-end' : 'justify-start'
+              message.senderId === userDetails?._id ? 'justify-end' : 'justify-start'
             }`}
           >
             <div
               className={`p-3 rounded-lg max-w-[75%] ${
-                message.senderId === 'currentUser'
+                message.senderId === userDetails?._id
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-700 text-white'
               }`}
@@ -89,7 +111,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId, onBack, isMobil
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <form onSubmit={handleSendMessage} className="p-4 ">
+      <form onSubmit={handleSendMessage} className="p-4">
         <div className="flex items-center">
           <input
             type="text"
